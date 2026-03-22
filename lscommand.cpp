@@ -18,107 +18,10 @@
 #include <sys/stat.h>
 // type definitions that stat() depends on
 #include <sys/types.h>
-// getpwuid() (user ID numbers --> user names)
-#include <pwd.h>
-// getgrgid() (group ID numbers --> group names)
-#include <grp.h>
-// strftime(), localtime()
-#include <ctime>
 using namespace std;
 
 // ============================================================================
-// getPermissions
-//
-// This is a function that will take as input a number that has the user's 
-// permissions stored, and will turn that number into a rwx readable 
-// permission line using bitmasks that displays permissions.
-//
-// INPUT: st_mode number (number that has user permissions stored)
-//
-// OUTPUT: human-readable rwx string (chmod)
-// ============================================================================
-
-string getPermissions(mode_t mode) 
-{
-    // string that will be replaced by rwx
-    string perms = "----------";
-
-    // FILE TYPE (first character)
-
-    // S_ISDIR() is a macro that checks if the file type bits say "directory"
-    if (S_ISDIR(mode))  
-        perms[0] = 'd';
-
-    // S_ISLNK() checks if it's a symbolic link (like a shortcut)
-    else if (S_ISLNK(mode)) 
-        perms[0] = 'l';
-
-    // if neither, regular file; leave as '-'
-
-    // OWNER PERMISSIONS (characters 1, 2, 3)
-
-    // S_IRUSR is a bitmask for "owner read permission"
-    // The & operator checks if that specific bit is set in mode
-    // If the bit is set, the permission exists — replace '-' with the letter
-    if (mode & S_IRUSR) perms[1] = 'r'; // owner can read
-    if (mode & S_IWUSR) perms[2] = 'w'; // owner can write
-    if (mode & S_IXUSR) perms[3] = 'x'; // owner can execute
-
-    // GROUP PERMISSIONS (characters 4, 5, 6)
-
-    if (mode & S_IRGRP) perms[4] = 'r'; // group can read
-    if (mode & S_IWGRP) perms[5] = 'w'; // group can write
-    if (mode & S_IXGRP) perms[6] = 'x'; // group can execute
-
-    // OTHERS' PERMISSIONS (characters 7, 8, 9)
-
-    if (mode & S_IROTH) perms[7] = 'r'; // others can read
-    if (mode & S_IWOTH) perms[8] = 'w'; // others can write
-    if (mode & S_IXOTH) perms[9] = 'x'; // others can execute
-
-    return perms;
-
-} // end of "getPermissions"
-
-// ============================================================================
-// getTimestamp
-//
-// This is a function that will take as input a number that has the user's 
-// permissions stored, and will turn that number into a rwx readable 
-// permission line using bitmasks that displays permissions.
-//
-// INPUT: time_t value
-//
-// OUTPUT: readable string (buffer)
-// ============================================================================
-
-string getTimestamp(time_t mtime) 
-{
-
-    // localtime() converts the raw Unix timestamp into a tm struct
-    // tm struct breaks the time down into fields: tm_hour, tm_min, tm_mon, etc.
-    struct tm* timeInfo = localtime(&mtime);
-
-    // Create a char array (buffer) to hold the formatted string
-    char buffer[20];
-
-    // strftime() formats the tm struct into a human readable string
-    // and writes it into our buffer
-    // "%b" = abbreviated month name (Mar)
-    // "%d" = day of month (21)
-    // "%H:%M" = hour and minute in 24hr format (14:32)
-    strftime(buffer, sizeof(buffer), "%b %d %H:%M", timeInfo);
-
-    // convert array to C++ string
-    return string(buffer);
-}
-
-// ============================================================================
 // listDirectory
-//
-// This function takes as an argument a directory path and lists out all the
-// files in that directory, calling getPermissions() when needed to get
-// owner, group, and others' perimissions.
 //
 // INPUT: directory path (string)
 //
@@ -152,34 +55,8 @@ void listDirectory(const string &path)
             continue;
         }
 
-        // build full path to file for stat() function
-        string fullPath = path + "/" + entry->d_name;
-
-        // create stat struct 
-        struct stat fileStat;
-
-        // call stat() to fill fileStat with data, will return -1 on failure
-        if (stat(fullPath.c_str(), &fileStat) == -1) 
-        {
-            // If stat() fails (permission denied), skip this file
-            cerr << "Cannot stat: " << fullPath << "\n";
-            continue;
-        }
-
-        // getting owner/group names
-        struct passwd* pw = getpwuid(fileStat.st_uid);
-        string owner = (pw != nullptr) ? pw->pw_name : "unknown";
-        struct group* gr = getgrgid(fileStat.st_gid);
-        string grpName = (gr != nullptr) ? gr->gr_name : "unknown";
-
-        
-        // print: permissions, owner, group, size, timestamp, filename
-        cout << getPermissions(fileStat.st_mode) << "\t"
-                << owner << "\t"        // owner username
-                << grpName << "\t"      // group name
-                << fileStat.st_size << "\t"   // size in bytes
-                << getTimestamp(fileStat.st_mtime) << "\t"  // last modified
-                << entry->d_name << "\n";     // filename
+        // print file followed by newline
+        cout << entry->d_name << "\n";
     }
 
     // finished with this directory, close and move on to free space
