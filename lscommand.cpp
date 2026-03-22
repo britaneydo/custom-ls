@@ -45,6 +45,12 @@ void listDirectory(const string &path)
     // files are found, returns nullptr --> loop ends
     while ((entry = readdir(dir)) != nullptr) 
     {
+        // skip all ., .., and hidden "files" (parent, .git)
+        if (entry->d_name[0] == '.') 
+        {
+            continue;
+        }
+
         // print file followed by newline
         cout << entry->d_name << "\n";
     }
