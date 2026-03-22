@@ -6,7 +6,7 @@ A custom implementation of the UNIX `ls` command written in C++. Explores how Li
 
 ## What It Does
 
-Instead of just listing filenames, this program reads real metadata from the Linux kernel using system calls — the same way the real `ls` does it. For each file in a given directory, it displays:
+Reads real metadata from Linux kernel using system calls, just like the actual ls command. Displays:
 
 - **Permissions** — decoded from `st_mode` into a human-readable `rwxr-xr-x` string
 - **Owner** — looked up by user ID via `getpwuid()`
@@ -59,16 +59,16 @@ drwxr-xr-x    root    root    4096    Mar 20 18:44    apt
 ## Key Concepts Demonstrated
 
 **System Calls Used**
-- `opendir()` / `readdir()` / `closedir()` — open and iterate through a directory
-- `stat()` — fetch inode metadata for each file
-- `getpwuid()` / `getgrgid()` — convert numeric IDs to human-readable names
-- `localtime()` / `strftime()` — format Unix timestamps
+- `opendir()` / `readdir()` / `closedir()` --> open and iterate through a directory
+- `stat()` --> fetch inode metadata for each file
+- `getpwuid()` / `getgrgid()` --> convert numeric IDs to human-readable names
+- `localtime()` / `strftime()` --> format Unix timestamps
 
 **OS Concepts Covered**
-- **Inodes** — stores all metadata about the file
-- **File permissions** — the `rwx` system and how it controls access for owner, group, and others
-- **Directory structure** — how Linux represents directories as special files containing entry lists
-- **Hidden files** — Linux convention of dot-prefixed filenames
+- **Inodes** --> stores all metadata about the file
+- **File permissions** --> the `rwx` system and how it controls access for owner, group, and others
+- **Directory structure** --> how Linux represents directories as special files containing entry lists
+- **Hidden files** --> Linux convention of dot-prefixed filenames
 
 ---
 
